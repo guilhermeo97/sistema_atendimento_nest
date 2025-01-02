@@ -42,7 +42,6 @@ export class Migrations1735831729170 implements MigrationInterface {
           {
             name: 'closed_at',
             type: 'timestamp',
-            isNullable: true,
           },
         ],
       }),

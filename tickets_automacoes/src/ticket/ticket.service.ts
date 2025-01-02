@@ -4,6 +4,7 @@ import { UpdateTicketDto } from './dto/update-ticket.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Ticket } from './entities/ticket.entity';
 import { Repository } from 'typeorm';
+import DisplayTicketDto from './dto/displayticket.dto';
 
 @Injectable()
 export class TicketService {
@@ -12,9 +13,11 @@ export class TicketService {
     private readonly ticketRepository: Repository<Ticket>,
   ) {}
 
-  create(dto: CreateTicketDto) {
-    this.ticketRepository.save(dto);
-    return dto;
+  async create(dto: CreateTicketDto) {
+    const ticket = new Ticket(dto);
+    const saveTicket = await this.ticketRepository.save(ticket);
+    const displayTicket = new DisplayTicketDto(saveTicket);
+    return displayTicket;
   }
 
   findAll() {
