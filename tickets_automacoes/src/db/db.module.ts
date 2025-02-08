@@ -1,23 +1,26 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { TicketModule } from 'src/ticket/ticket.module';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot({
-      type: 'mysql',
-      host: process.env.DB_HOST || 'localhost',
-      port: process.env.DB_PORT ? parseInt(process.env.DB_PORT) : 3306,
-      username: 'root',
-      password: '0597',
-      database: 'tickets_automacoes',
-      autoLoadEntities: true,
-      synchronize: true,
-      migrations: ['db/migrations/*.ts'],
+    ConfigModule.forRoot({
+      isGlobal: true,
     }),
-    TicketModule,
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => ({
+        type: 'mysql',
+        host: 'localhost',
+        port: parseInt(configService.get<string>('MYSQL_PORT'), 10),
+        username: configService.get<string>('MYSQL_USER'),
+        password: configService.get<string>('MYSQL_PASSWORD'),
+        database: configService.get<string>('MYSQL_DATABASE'),
+        synchronize: true,
+        autoLoadEntities: true,
+      }),
+      inject: [ConfigService],
+    }),
   ],
-  controllers: [],
-  providers: [],
 })
 export class DbModule {}

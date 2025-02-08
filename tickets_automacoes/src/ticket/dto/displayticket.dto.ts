@@ -1,11 +1,16 @@
+import { User } from 'src/user/entities/user.entity';
 import { Ticket } from '../entities/ticket.entity';
 import { StatusTicket } from '../enums/statusticket.enum';
+import { TypeDemand } from '../enums/typedemand.enum';
 
 export default class DisplayTicketDto {
   id: number;
   title: string;
   description: string;
+  typeDemand: TypeDemand;
   status: StatusTicket;
+  client: User;
+  developer: User;
   created_at: Date;
   updated_at: Date;
   closed_at: Date;
