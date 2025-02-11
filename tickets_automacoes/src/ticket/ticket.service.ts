@@ -5,12 +5,15 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Ticket } from './entities/ticket.entity';
 import { Repository } from 'typeorm';
 import DisplayTicketDto from './dto/displayticket.dto';
+import { UserService } from 'src/user/user.service';
+import { DisplayUserDto } from 'src/user/dto/display-user.dto';
 
 @Injectable()
 export class TicketService {
   constructor(
     @InjectRepository(Ticket)
     private readonly ticketRepository: Repository<Ticket>,
+    private readonly userService: UserService,
   ) {}
 
   async create(dto: CreateTicketDto) {
@@ -20,8 +23,23 @@ export class TicketService {
     return displayTicket;
   }
 
-  findAll() {
-    return this.ticketRepository.find();
+  async findAllByUserWithClient(token: string) {
+    const findUser = await this.userService.findByEmail(token);
+    if (!findUser) {
+      return null;
+    }
+
+    const findTickets = await this.ticketRepository.find({
+      where: { client: findUser.id },
+    });
+
+    if (findTickets.length === 0) {
+      return null;
+    }
+    const displayUsers = new DisplayUserDto(findUser);
+    const displayTickets = findTickets.map(
+      (ticket) => new DisplayTicketDto(ticket),
+    );
   }
 
   findOne(id: number) {

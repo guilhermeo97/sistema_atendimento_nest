@@ -9,6 +9,7 @@ import {
   UseGuards,
   Req,
   UnauthorizedException,
+  HttpException,
 } from '@nestjs/common';
 import { TicketService } from './ticket.service';
 import { CreateTicketDto } from './dto/create-ticket.dto';
@@ -35,8 +36,17 @@ export class TicketController {
   }
 
   @Get('all')
-  findAll() {
-    return this.ticketService.findAll();
+  findAll(@Req() request: Request) {
+    try {
+      const { token } = request.cookies.token;
+
+      if (!token) {
+        throw new UnauthorizedException('Invalid credentials');
+      }
+      return this.ticketService.findAll(token);
+    } catch (err) {
+      throw new HttpException(err.message, err.status);
+    }
   }
 
   @Get(':id')
