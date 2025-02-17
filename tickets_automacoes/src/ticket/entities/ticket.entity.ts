@@ -38,8 +38,8 @@ export class Ticket {
     if (dto) {
       this.title = dto.title;
       this.description = dto.description;
-      this.client = dto.client;
       this.typeDemand = dto.typeDemand;
+      this.sprintName = dto.sprintName;
     }
     this.status = StatusTicket.OPEN;
     this.created_at = new Date();

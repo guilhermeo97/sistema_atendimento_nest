@@ -10,5 +10,6 @@ export class CreateTicketDto {
   @IsEnum(TypeDemand)
   typeDemand: TypeDemand;
   @IsNotEmpty()
+  sprintName: string;
   client: User;
 }

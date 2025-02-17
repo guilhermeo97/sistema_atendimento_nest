@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { UpdateTicketDto } from './dto/update-ticket.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -16,30 +20,47 @@ export class TicketService {
     private readonly userService: UserService,
   ) {}
 
-  async create(dto: CreateTicketDto) {
-    const ticket = new Ticket(dto);
-    const saveTicket = await this.ticketRepository.save(ticket);
-    const displayTicket = new DisplayTicketDto(saveTicket);
-    return displayTicket;
+  async create(dto: CreateTicketDto, email: string) {
+    try {
+      const findClient = await this.userService.findByEmail(email);
+      if (!findClient) {
+        throw new NotFoundException('User not found');
+      }
+      dto.client = findClient;
+      const saveTicket = await this.ticketRepository.save(dto);
+      if (!saveTicket) {
+        throw new NotFoundException('Ticket not created');
+      }
+      const displayTicket = new DisplayTicketDto(saveTicket, findClient);
+      return displayTicket;
+    } catch (err) {
+      throw new NotFoundException(err.message);
+    }
   }
 
-  async findAllByUserWithClient(token: string) {
-    const findUser = await this.userService.findByEmail(token);
-    if (!findUser) {
-      return null;
-    }
+  async findAllByUserWithClient(email: string) {
+    try {
+      const findUser = await this.userService.findByEmail(email);
+      if (!findUser) {
+        throw new UnauthorizedException('User not found');
+      }
 
-    const findTickets = await this.ticketRepository.find({
-      where: { client: findUser.id },
-    });
+      const findTickets = await this.ticketRepository.find({
+        where: { client: findUser },
+      });
 
-    if (findTickets.length === 0) {
-      return null;
+      if (findTickets.length === 0) {
+        return null;
+      }
+      const displayClient = new DisplayUserDto(findUser);
+
+      const displayTickets = findTickets.map(
+        (ticket) => new DisplayTicketDto(ticket, displayClient),
+      );
+      return displayTickets;
+    } catch (err) {
+      throw new NotFoundException(err.message);
     }
-    const displayUsers = new DisplayUserDto(findUser);
-    const displayTickets = findTickets.map(
-      (ticket) => new DisplayTicketDto(ticket),
-    );
   }
 
   findOne(id: number) {

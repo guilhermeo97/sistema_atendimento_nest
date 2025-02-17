@@ -16,7 +16,9 @@ import { CreateTicketDto } from './dto/create-ticket.dto';
 import { UpdateTicketDto } from './dto/update-ticket.dto';
 import { AuthGuard } from '../auth/auth.guard';
 import { Request } from 'express';
+import { ApiCookieAuth } from '@nestjs/swagger';
 
+@ApiCookieAuth('token')
 @UseGuards(AuthGuard)
 @Controller('ticket')
 export class TicketController {
@@ -25,11 +27,11 @@ export class TicketController {
   @Post('create')
   create(@Req() request: Request, @Body() createTicketDto: CreateTicketDto) {
     try {
-      const token = request.cookies.token;
-      if (!token) {
+      const email = request.user.email;
+      if (!email) {
         throw new UnauthorizedException('Invalid credentials');
       }
-      return this.ticketService.create(createTicketDto);
+      return this.ticketService.create(createTicketDto, email);
     } catch (err) {
       return err;
     }
@@ -38,12 +40,11 @@ export class TicketController {
   @Get('all')
   findAll(@Req() request: Request) {
     try {
-      const { token } = request.cookies.token;
-
-      if (!token) {
+      const email = request.user.email;
+      if (!email) {
         throw new UnauthorizedException('Invalid credentials');
       }
-      return this.ticketService.findAll(token);
+      return this.ticketService.findAllByUserWithClient(email);
     } catch (err) {
       throw new HttpException(err.message, err.status);
     }

@@ -11,17 +11,17 @@ export default class DisplayTicketDto {
   typeDemand: TypeDemand;
   status: StatusTicket;
   client: DisplayUserDto;
-  developer: DisplayUserDto;
+  developer!: DisplayUserDto;
   created_at: Date;
   updated_at: Date;
   closed_at: Date;
 
-  constructor(ticket: Ticket) {
+  constructor(ticket: Ticket, client: DisplayUserDto) {
     this.id = ticket.id;
     this.title = ticket.title;
     this.description = ticket.description;
     this.typeDemand = ticket.typeDemand;
-    this.client = ticket.client;
+    this.client = client;
     this.developer = ticket.developer;
     this.created_at = ticket.created_at;
     this.updated_at = ticket.updated_at;

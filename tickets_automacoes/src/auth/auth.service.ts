@@ -27,7 +27,6 @@ export class AuthService {
       if (!isPasswordMatch) {
         throw new BadRequestException('Invalid password');
       }
-      console.log(this.configService.get('SECRET'));
       const payload = { email: user.email, sub: user.id };
       const token = this.jwtService.sign(payload, {
         secret: this.configService.get('SECRET'),
